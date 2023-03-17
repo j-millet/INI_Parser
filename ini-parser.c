@@ -60,6 +60,59 @@ int getline(FILE* f, char **out)
     return size-1;
 }
 
+char *getval(struct section *sections,int len, char *section, char *key)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        struct section s = sections[i];
+        if(strcmp(s.name,section) == 0)
+        {
+            for (size_t j = 0; j < s.numkeys; j++)
+            {
+                if (strcmp(s.keys[j],key)== 0)
+                {
+                    return s.values[j];
+                }
+                
+            }
+            printf("No key named '%s' in section '%s'",key,section);
+            exit(1);
+        }
+    }
+    printf("No section named '%s'",section);
+    exit(1);
+}
+
+int parse_access(char *inpt, char** outsection, char** outkey)
+{
+    char c;
+    int i = 0;
+    int len = strlen(inpt);
+
+    char* inptcp = (char *)malloc(sizeof(char)*len);
+    strcpy(inptcp,inpt);
+
+    while((c = inptcp[i]))
+    {
+        if(c == '.'){
+            break;
+        }
+        i++;
+    }
+
+    inptcp[i] = ' ';
+    if(!c)
+    {
+        free(inptcp);
+        return 0;
+    }
+    *outsection = (char *)malloc(sizeof(char)*i);
+    *outkey = (char *)malloc(sizeof(char)*(len-i-1));
+    sscanf(inptcp,"%s %s",*outsection,*outkey);
+    free(inptcp);
+    return 1;
+}
+
 /*
 Parses ini file and stores results in 'out'
 Returns length of 'out' array;
@@ -141,7 +194,7 @@ int main(int argc, char const *argv[])
     FILE* i = fopen("test.ini","r");
     int section_count = parseINI(i,&sections);
     fclose(i);
-
+    /*
     printf("{\n");
     for (size_t i = 0; i < section_count; i++)
     {
@@ -162,6 +215,13 @@ int main(int argc, char const *argv[])
         printf("}%s\n",(i==section_count-1)?"":",");
         
     }
-    printf("}");
+    printf("}");*/
+    char* key;
+    char* section;
+    if(parse_access("test.strong",&section,&key))
+    {
+        printf("%s",getval(sections,section_count,section,key));
+    }
+    else{perror("wat doink men");exit(1);}
     return 0;
 }
