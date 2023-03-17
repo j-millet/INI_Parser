@@ -14,14 +14,13 @@ int strisnum(char *string)
 {
     char c;
     int i = 0;
-    while(c = string[i])
+    while((c = string[i]))
     {
         if (c<48 || c>57)
         {
             return 0;
         }
         i++;
-        
     }
     return 1;
 }
@@ -30,7 +29,7 @@ int isvalidkey(char *string)
 {
     char c;
     int i = 0;
-    while(c = string[i])
+    while((c = string[i]))
     {
         if (!(c == 45 || (c > 47 && c < 58) ||(c > 64 && c < 91) ||(c > 96 && c < 123)))
         {
@@ -41,6 +40,9 @@ int isvalidkey(char *string)
     return 1;
 }
 
+/*
+Gets line from file.
+*/
 int getline(FILE* f, char **out)
 {
     int startpos = ftell(f);
@@ -58,47 +60,59 @@ int getline(FILE* f, char **out)
     return size-1;
 }
 
+/*
+Parses ini file and stores results in 'out'
+Returns length of 'out' array;
+*/
 int parseINI(FILE *f, struct section **out)
 {
     int section_count = 1;
     struct section *sections = calloc(section_count,sizeof(struct section));
     char *line;
     int s;
+    int lineNumber = 0;
 
     struct section *current_section = NULL;
-    struct entry *entries;
 
-    while(s=getline(f,&line))
+    while((s=getline(f,&line)))
     {   
+        lineNumber++;
         if (line[0] == '[')
         {
-            if (current_section != NULL)
+            if (current_section != NULL)//add current section to sections array
             {
-                struct section newsec = {current_section->name,current_section->numkeys,current_section->keys,current_section->values};//help
+                struct section newsec = {current_section->name,current_section->numkeys-1,current_section->keys,current_section->values};//help
                 sections[section_count-1] = newsec;
+                free(current_section);
                 sections = (struct section *)realloc(sections,sizeof(struct section)*(++section_count));
                 if(sections == 0x0){perror("failed to reallocate memory");exit(1);}
             }
+
             line[s-2] = ' '; //remove ] character
             char *sname = (char *)malloc((s-1)*sizeof(char));
             sscanf(line,"[%s",sname);
 
-            current_section = (struct section *)malloc(sizeof(struct section));//help
+            current_section = (struct section *)malloc(sizeof(struct section));//create new current section struct
             current_section->name = sname;
             current_section->numkeys = 1;
             current_section->keys = (char **)malloc(sizeof(char *));
             current_section->values = (char **)malloc(sizeof(char *));
+
         }
         else if (line[0] != '\n' && line[0] != ';')
         {
-            char key[s];
-            char value[s];
+            char *key = (char *)malloc(s*sizeof(char));
+            char *value = (char *)malloc(s*sizeof(char));
             sscanf(line,"%s = %s",key,value);
-            if(!isvalidkey(key)){printf("invalid key: %s",key); exit(1);}
+            if(!isvalidkey(key)){printf("INVALID KEY IN FILE: line %d, key '%s'",lineNumber,key); exit(1);}
+
             current_section->keys[current_section->numkeys-1] = (char *)malloc(s*sizeof(char));
             current_section->values[current_section->numkeys-1] = (char *)malloc(s*sizeof(char));
             strcpy(current_section->keys[current_section->numkeys-1],key);
             strcpy(current_section->values[current_section->numkeys-1],value);
+
+            free(key);
+            free(value);
 
             current_section->numkeys++;
             current_section->keys = (char **)realloc(current_section->keys,current_section->numkeys*sizeof(char *));
@@ -106,9 +120,9 @@ int parseINI(FILE *f, struct section **out)
 
         }
     }
-    if (current_section != NULL)
+    if (current_section != NULL)//add last section to sections array
             {
-                struct section newsec = {current_section->name,current_section->numkeys,current_section->keys,current_section->values};//help
+                struct section newsec = {current_section->name,current_section->numkeys-1,current_section->keys,current_section->values};//help
                 sections[section_count-1] = newsec;
             }
     
@@ -124,7 +138,7 @@ int main(int argc, char const *argv[])
         exit(1);
     }*/
     struct section *sections;
-    FILE* i = fopen("test2.ini","r");
+    FILE* i = fopen("test.ini","r");
     int section_count = parseINI(i,&sections);
     fclose(i);
 
@@ -133,18 +147,17 @@ int main(int argc, char const *argv[])
     {
         struct section s = sections[i];
         printf("%c%s%c:{\n",'"',s.name,'"');
-        for (size_t j = 0; j < s.numkeys-1; j++)
+        for (size_t j = 0; j < s.numkeys; j++)
         {
             char *key = s.keys[j];
             char *value = s.values[j];
             if(strisnum(value))
             {
-                printf("\t%c%s%c:%d%s\n",'"',key,'"',atoi(s.values[j]),(j==s.numkeys-2)?"":",");
+                printf("\t%c%s%c:%d%s\n",'"',key,'"',atoi(s.values[j]),(j==s.numkeys-1)?"":",");
             }
             else{
-                printf("\t%c%s%c:%c%s%c%s\n",'"',key,'"','"',value,'"',(j==s.numkeys-2)?"":",");
+                printf("\t%c%s%c:%c%s%c%s\n",'"',key,'"','"',value,'"',(j==s.numkeys-1)?"":",");
             }
-            
         }
         printf("}%s\n",(i==section_count-1)?"":",");
         
