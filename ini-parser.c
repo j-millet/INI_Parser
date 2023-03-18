@@ -43,7 +43,7 @@ int isvalidkey(char *string)
 /*
 Gets line from file.
 */
-int getline(FILE* f, char **out)
+int get_line(FILE* f, char **out)
 {
     int startpos = ftell(f);
     size_t size = 1;
@@ -54,7 +54,7 @@ int getline(FILE* f, char **out)
         size++;
     }
     while(a!= '\n');
-    *out = (char *)malloc(sizeof(char)*size);
+    *out = (char *)realloc(*out,sizeof(char)*size);
     fseek(f,startpos,SEEK_SET);
     fgets(*out,size,f);
     return size-1;
@@ -121,13 +121,13 @@ int parseINI(FILE *f, struct section **out)
 {
     int section_count = 1;
     struct section *sections = calloc(section_count,sizeof(struct section));
-    char *line;
+    char *line = (char *)malloc(sizeof(char));
     int s;
     int lineNumber = 0;
 
     struct section *current_section = NULL;
 
-    while((s=getline(f,&line)))
+    while((s=get_line(f,&line)))
     {   
         lineNumber++;
         if (line[0] == '[')
@@ -172,13 +172,14 @@ int parseINI(FILE *f, struct section **out)
             current_section->values = (char **)realloc(current_section->values,current_section->numkeys*sizeof(char *));
 
         }
+        //free(line);
     }
     if (current_section != NULL)//add last section to sections array
             {
                 struct section newsec = {current_section->name,current_section->numkeys-1,current_section->keys,current_section->values};//help
                 sections[section_count-1] = newsec;
             }
-    
+    //free(line);
     *out = sections;
     return section_count;
 }
@@ -223,5 +224,21 @@ int main(int argc, char const *argv[])
         printf("%s",getval(sections,section_count,section,key));
     }
     else{perror("wat doink men");exit(1);}
+
+    for (size_t i = 0; i < section_count; i++)
+    {
+        struct section s = sections[i];
+        for (size_t j = 0; j < s.numkeys; j++)
+        {
+            free(s.values[j]);
+            free(s.keys[j]);
+        }
+        
+        free(s.keys);
+        free(s.values);
+        free(s.name);
+    }
+    
+    free(sections);
     return 0;
 }
