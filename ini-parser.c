@@ -179,7 +179,7 @@ int parseINI(FILE *f, struct section **out)
                 struct section newsec = {current_section->name,current_section->numkeys-1,current_section->keys,current_section->values};//help
                 sections[section_count-1] = newsec;
             }
-    //free(line);
+    free(line);
     *out = sections;
     return section_count;
 }
