@@ -298,13 +298,13 @@ int main(int argc, char const *argv[])
         free(val2);
     }
     else{
-        char* key;
-        char* section;
+        char* key = (char *)malloc(1);
+        char* section = (char *)malloc(1);
         if(parse_access(argv[2],&section,&key))
         {
             char *val = (char *)malloc(1);
             getval(sections,section_count,section,key,&val);
-            printf("'%s'\n",val);
+            printf("%s\n",val);
             free(val);
         }
         else{perror("Wrong expression\n");exit(EXIT_FAILURE);}
