@@ -32,7 +32,7 @@ int isvalidkey(char *string)
 }
 
 //checks if string is an expression (string [+-*/] string)
-int isexpression(char *str)
+int isexpression(const char *str)
 {
     int count = 0;
     char c;
@@ -44,5 +44,5 @@ int isexpression(char *str)
         }
         
     }
-    return count;
+    return count==1;
 }

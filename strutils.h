@@ -2,5 +2,5 @@
 #define STRUTILS_H_
 int isnum(char *string);
 int isvalidkey(char *string);
-int isexpression(char *str);
+int isexpression(const char *str);
 #endif // STRUTILS_H_

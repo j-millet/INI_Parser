@@ -33,7 +33,7 @@ int get_line(FILE* f, char **out)
 }
 
 //gets value specified by section and key from sections array
-char *getval(struct section *sections,int len, char *section, char *key, char **out)
+char *getval(struct section *sections,int len,const char *section,const char *key, char **out)
 {
     for (int i = 0; i < len; i++)
     {
@@ -59,7 +59,7 @@ char *getval(struct section *sections,int len, char *section, char *key, char **
 }
 
 //parses string formatted as 'section.key' into separate section and key strings, stores output in outsection and outkey
-int parse_access(char *inpt, char** outsection, char** outkey)
+int parse_access(const char *inpt, char** outsection, char** outkey)
 {
     char c;
     int i = 0;
