@@ -92,7 +92,7 @@ char *getval(struct section *sections,int len, char *section, char *key, char **
             {
                 if (strcmp(s.keys[j],key)== 0)
                 {
-                    *out = (char*)realloc(*out,sizeof(char)*strlen(s.values[j]));
+                    *out = (char*)realloc(*out,sizeof(char)*(strlen(s.values[j])+1));
                     strcpy(*out,s.values[j]); 
                     return 0;
                 }
@@ -113,7 +113,7 @@ int parse_access(char *inpt, char** outsection, char** outkey)
     int i = 0;
     int len = strlen(inpt);
 
-    char* inptcp = (char *)malloc(sizeof(char)*len);
+    char* inptcp = (char *)malloc(sizeof(char)*(len+1));
     strcpy(inptcp,inpt);
 
     while((c = inptcp[i]))
@@ -312,22 +312,22 @@ int main(int argc, char const *argv[])
         free(section);
     }
 
-    printf("Freeing memory...\n");
+    //printf("Freeing memory...\n");
     for (int i = 0; i < section_count; i++)
     {
-        printf("Freeing keys&values...\n");
+        //printf("Freeing keys&values...\n");
         struct section s = sections[i];
         for (int j = 0; j < s.numkeys; j++)
         {
             free(s.values[j]);
             free(s.keys[j]);
         }
-        printf("Freeing rest...\n");
+        //printf("Freeing rest...\n");
         free(s.keys);
         free(s.values);
         free(s.name);
     }
-    printf("Freeing sections array...\n");
+    //printf("Freeing sections array...\n");
     free(sections);
     return 0;
 }
