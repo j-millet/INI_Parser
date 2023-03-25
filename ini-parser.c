@@ -173,6 +173,11 @@ int main(int argc, char const *argv[])
 
     struct section *sections;
     FILE* i = fopen(argv[1],"r");
+    if(!i)
+    {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
+    }
     int section_count = parseINI(i,&sections);
     fclose(i);
     //printf("file parsed\n");
